@@ -1,0 +1,35 @@
+# GitLab CI/CD Pipeline for C++ Messaging Service
+# Uses RHEL 7 image for building and testing
+
+stages:
+  - build
+  - test
+
+variables:
+  GIT_STRATEGY: clone
+
+# Use RHEL 7 base image
+image: registry.access.redhat.com/rhel7:latest
+
+before_script:
+  - yum -y install gcc-c++ make sqlite-devel
+  - yum -y install gcc-c++-4.4.7 # Install GCC 4.4 specifically
+
+build:
+  stage: build
+  script:
+    - export CXX=g++-4.4
+    - make
+  artifacts:
+    paths:
+      - messaging_service
+    expire_in: 1 week
+
+test:
+  stage: test
+  script:
+    - export CXX=g++-4.4
+    - make test
+    - ./run_tests
+  dependencies:
+    - build
