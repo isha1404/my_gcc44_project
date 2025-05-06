@@ -1,4 +1,9 @@
 #include <iostream>
+#include <vector>
+#include <stdexcept>
+#include "../include/message.h"
+#include "../include/user.h"
+#include "../include/chat_service.h"
 
 int run_message_tests();
 int run_user_tests();
@@ -33,8 +38,9 @@ int run_message_tests() {
     
     try {
         std::cout << "Testing message creation... ";
-        Message msg("user1", "Hello, world!");
+        Message msg("user1", "user2", "Hello, world!");
         if (msg.getSender() != "user1" || 
+            msg.getReceiver() != "user2" ||
             msg.getContent() != "Hello, world!" || 
             msg.getTimestamp() <= 0) {
             throw std::runtime_error("Message creation test failed");
@@ -44,6 +50,7 @@ int run_message_tests() {
         std::cout << "Testing message toString... ";
         std::string str = msg.toString();
         if (str.find("user1") == std::string::npos || 
+            str.find("user2") == std::string::npos ||
             str.find("Hello, world!") == std::string::npos) {
             throw std::runtime_error("Message toString test failed");
         }
@@ -124,9 +131,10 @@ int run_chat_service_tests() {
         std::cout << "PASSED" << std::endl;
         
         std::cout << "Testing message sending... ";
+        chatService.registerUser("user2");
         chatService.login("user1");
         
-        result = chatService.sendMessage("user1", "Hello, world!");
+        result = chatService.sendMessage("user1", "user2", "Hello, world!");
         if (result != true) {
             throw std::runtime_error("Message sending test failed");
         }
@@ -134,12 +142,13 @@ int run_chat_service_tests() {
         std::vector<Message> messages = chatService.getMessages();
         if (messages.size() != 1 || 
             messages[0].getSender() != "user1" || 
+            messages[0].getReceiver() != "user2" ||
             messages[0].getContent() != "Hello, world!") {
             throw std::runtime_error("Message retrieval test failed");
         }
         
         chatService.logout("user1");
-        result = chatService.sendMessage("user1", "This should fail");
+        result = chatService.sendMessage("user1", "user2", "This should fail");
         if (result != false) {
             throw std::runtime_error("Offline user message sending test failed");
         }
