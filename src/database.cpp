@@ -62,9 +62,11 @@ bool Database::createTables() {
         "CREATE TABLE IF NOT EXISTS messages ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "sender TEXT,"
+        "receiver TEXT,"
         "content TEXT,"
         "timestamp INTEGER,"
-        "FOREIGN KEY(sender) REFERENCES users(username)"
+        "FOREIGN KEY(sender) REFERENCES users(username),"
+        "FOREIGN KEY(receiver) REFERENCES users(username)"
         ");";
     
     char* errMsg = NULL;
@@ -91,8 +93,8 @@ bool Database::saveMessage(const Message& message) {
     }
     
     const char* sql = 
-        "INSERT INTO messages (sender, content, timestamp) "
-        "VALUES (?, ?, ?);";
+        "INSERT INTO messages (sender, receiver, content, timestamp) "
+        "VALUES (?, ?, ?, ?);";
     
     sqlite3_stmt* stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -102,8 +104,9 @@ bool Database::saveMessage(const Message& message) {
     }
     
     sqlite3_bind_text(stmt, 1, message.getSender().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, message.getContent().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_int64(stmt, 3, message.getTimestamp());
+    sqlite3_bind_text(stmt, 2, message.getReceiver().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, message.getContent().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int64(stmt, 4, message.getTimestamp());
     
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -119,7 +122,7 @@ std::vector<Message> Database::loadMessages() {
     }
     
     const char* sql = 
-        "SELECT sender, content, timestamp FROM messages "
+        "SELECT sender, receiver, content, timestamp FROM messages "
         "ORDER BY timestamp ASC;";
     
     sqlite3_stmt* stmt;
@@ -131,10 +134,51 @@ std::vector<Message> Database::loadMessages() {
     
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         const char* sender = (const char*)sqlite3_column_text(stmt, 0);
-        const char* content = (const char*)sqlite3_column_text(stmt, 1);
-        time_t timestamp = sqlite3_column_int64(stmt, 2);
+        const char* receiver = (const char*)sqlite3_column_text(stmt, 1);
+        const char* content = (const char*)sqlite3_column_text(stmt, 2);
+        time_t timestamp = sqlite3_column_int64(stmt, 3);
         
-        Message msg(sender, content);
+        Message msg(sender, receiver, content);
+        msg.setTimestamp(timestamp);
+        
+        messages.push_back(msg);
+    }
+    
+    sqlite3_finalize(stmt);
+    
+    return messages;
+}
+
+std::vector<Message> Database::loadMessagesForUser(const std::string& username) {
+    std::vector<Message> messages;
+    
+    if (!isConnected) {
+        return messages;
+    }
+    
+    const char* sql = 
+        "SELECT sender, receiver, content, timestamp FROM messages "
+        "WHERE sender = ? OR receiver = ? "
+        "ORDER BY timestamp ASC;";
+    
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL prepare error: " << sqlite3_errmsg(db) << std::endl;
+        return messages;
+    }
+    
+    sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_STATIC);
+    
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        const char* sender = (const char*)sqlite3_column_text(stmt, 0);
+        const char* receiver = (const char*)sqlite3_column_text(stmt, 1);
+        const char* content = (const char*)sqlite3_column_text(stmt, 2);
+        time_t timestamp = sqlite3_column_int64(stmt, 3);
+        
+        Message msg(sender, receiver, content);
+        msg.setTimestamp(timestamp);
         
         messages.push_back(msg);
     }

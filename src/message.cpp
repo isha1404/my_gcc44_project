@@ -2,13 +2,17 @@
 #include <sstream>
 #include <ctime>
 
-Message::Message(const std::string& sender, const std::string& content) 
-    : sender(sender), content(content) {
+Message::Message(const std::string& sender, const std::string& receiver, const std::string& content) 
+    : sender(sender), receiver(receiver), content(content) {
     timestamp = time(NULL);
 }
 
 std::string Message::getSender() const {
     return sender;
+}
+
+std::string Message::getReceiver() const {
+    return receiver;
 }
 
 std::string Message::getContent() const {
@@ -29,6 +33,10 @@ std::string Message::toString() const {
     char buffer[80];
     strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
     
-    ss << "[" << buffer << "] " << sender << ": " << content;
+    ss << "[" << buffer << "] From: " << sender << " To: " << receiver << " - " << content;
     return ss.str();
+}
+
+bool Message::isVisibleTo(const std::string& username) const {
+    return (username == sender || username == receiver);
 }

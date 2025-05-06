@@ -67,12 +67,16 @@ bool ChatService::logout(const std::string& username) {
     return true;
 }
 
-bool ChatService::sendMessage(const std::string& sender, const std::string& content) {
+bool ChatService::sendMessage(const std::string& sender, const std::string& receiver, const std::string& content) {
     if (users.find(sender) == users.end() || !users[sender].isOnline()) {
-        return false; // User does not exist or is not online
+        return false; // Sender does not exist or is not online
     }
     
-    Message msg(sender, content);
+    if (users.find(receiver) == users.end()) {
+        return false; // Receiver does not exist
+    }
+    
+    Message msg(sender, receiver, content);
     messages.push_back(msg);
     
     if (useDatabase && db != NULL) {
@@ -84,6 +88,22 @@ bool ChatService::sendMessage(const std::string& sender, const std::string& cont
 
 std::vector<Message> ChatService::getMessages() const {
     return messages;
+}
+
+std::vector<Message> ChatService::getMessagesForUser(const std::string& username) const {
+    std::vector<Message> userMessages;
+    
+    if (useDatabase && db != NULL) {
+        return db->loadMessagesForUser(username);
+    }
+    
+    for (size_t i = 0; i < messages.size(); i++) {
+        if (messages[i].isVisibleTo(username)) {
+            userMessages.push_back(messages[i]);
+        }
+    }
+    
+    return userMessages;
 }
 
 bool ChatService::isUserRegistered(const std::string& username) const {

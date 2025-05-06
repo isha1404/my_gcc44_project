@@ -24,8 +24,9 @@ public:
     bool login(const std::string& username);
     bool logout(const std::string& username);
     
-    bool sendMessage(const std::string& sender, const std::string& content);
+    bool sendMessage(const std::string& sender, const std::string& receiver, const std::string& content);
     std::vector<Message> getMessages() const;
+    std::vector<Message> getMessagesForUser(const std::string& username) const;
     
     bool isUserRegistered(const std::string& username) const;
     bool isUserOnline(const std::string& username) const;

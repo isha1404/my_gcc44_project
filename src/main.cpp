@@ -8,8 +8,8 @@ void displayHelp() {
     std::cout << "  register <username> - Register a new user" << std::endl;
     std::cout << "  login <username> - Login as a user" << std::endl;
     std::cout << "  logout <username> - Logout a user" << std::endl;
-    std::cout << "  send <username> <message> - Send a message as a user" << std::endl;
-    std::cout << "  messages - Display all messages" << std::endl;
+    std::cout << "  send <sender> <receiver> <message> - Send a private message" << std::endl;
+    std::cout << "  messages <username> - Display messages visible to a user" << std::endl;
     std::cout << "  users - Display all registered users" << std::endl;
     std::cout << "  help - Display this help message" << std::endl;
     std::cout << "  exit - Exit the program" << std::endl;
@@ -53,21 +53,29 @@ int main() {
                 std::cout << "User '" << username << "' does not exist" << std::endl;
             }
         } else if (command == "send") {
-            std::cin >> username;
-            std::cin.ignore(); // Ignore the space after username
+            std::string sender, receiver;
+            std::cin >> sender >> receiver;
+            std::cin.ignore(); // Ignore the space after receiver
             std::getline(std::cin, message);
             
-            if (chatService.sendMessage(username, message)) {
+            if (chatService.sendMessage(sender, receiver, message)) {
                 std::cout << "Message sent successfully" << std::endl;
             } else {
-                std::cout << "Failed to send message. User does not exist or is not logged in" << std::endl;
+                std::cout << "Failed to send message. Check that sender is logged in and receiver exists" << std::endl;
             }
         } else if (command == "messages") {
-            std::vector<Message> messages = chatService.getMessages();
+            std::cin >> username;
+            
+            if (!chatService.isUserRegistered(username)) {
+                std::cout << "User '" << username << "' does not exist" << std::endl;
+                continue;
+            }
+            
+            std::vector<Message> messages = chatService.getMessagesForUser(username);
             if (messages.empty()) {
-                std::cout << "No messages" << std::endl;
+                std::cout << "No messages for user '" << username << "'" << std::endl;
             } else {
-                std::cout << "Messages:" << std::endl;
+                std::cout << "Messages for user '" << username << "':" << std::endl;
                 for (size_t i = 0; i < messages.size(); ++i) {
                     std::cout << messages[i].toString() << std::endl;
                 }

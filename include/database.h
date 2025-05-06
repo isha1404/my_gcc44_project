@@ -23,6 +23,7 @@ public:
     bool createTables();
     bool saveMessage(const Message& message);
     std::vector<Message> loadMessages();
+    std::vector<Message> loadMessagesForUser(const std::string& username);
     
     // User-related database operations
     bool saveUser(const std::string& username, bool online);
