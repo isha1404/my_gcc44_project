@@ -1,5 +1,9 @@
 #include "../include/user.h"
 
+User::User()
+    : username(""), online(false) {
+}
+
 User::User(const std::string& username) 
     : username(username), online(false) {
 }

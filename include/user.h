@@ -9,6 +9,7 @@ private:
     bool online;
 
 public:
+    User(); // Default constructor
     User(const std::string& username);
     
     std::string getUsername() const;
