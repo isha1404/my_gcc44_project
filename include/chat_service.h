@@ -1,0 +1,29 @@
+#ifndef CHAT_SERVICE_H
+#define CHAT_SERVICE_H
+
+#include <vector>
+#include <map>
+#include <string>
+#include "message.h"
+#include "user.h"
+
+class ChatService {
+private:
+    std::map<std::string, User> users;
+    std::vector<Message> messages;
+
+public:
+    ChatService();
+    
+    bool registerUser(const std::string& username);
+    bool login(const std::string& username);
+    bool logout(const std::string& username);
+    
+    bool sendMessage(const std::string& sender, const std::string& content);
+    std::vector<Message> getMessages() const;
+    
+    bool isUserRegistered(const std::string& username) const;
+    bool isUserOnline(const std::string& username) const;
+};
+
+#endif // CHAT_SERVICE_H
