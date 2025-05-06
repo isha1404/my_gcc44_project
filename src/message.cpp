@@ -19,6 +19,10 @@ time_t Message::getTimestamp() const {
     return timestamp;
 }
 
+void Message::setTimestamp(time_t timestamp) {
+    this->timestamp = timestamp;
+}
+
 std::string Message::toString() const {
     std::stringstream ss;
     struct tm* timeinfo = localtime(&timestamp);

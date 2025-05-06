@@ -16,10 +16,15 @@ void displayHelp() {
 }
 
 int main() {
-    ChatService chatService;
+    ChatService chatService("messages.db");
     std::string command, username, message;
     
     std::cout << "Simple Messaging Service" << std::endl;
+    if (chatService.isDatabaseEnabled()) {
+        std::cout << "Database persistence enabled" << std::endl;
+    } else {
+        std::cout << "Running in memory-only mode" << std::endl;
+    }
     std::cout << "Type 'help' for available commands" << std::endl;
     
     while (true) {

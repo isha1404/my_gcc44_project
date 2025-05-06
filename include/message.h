@@ -16,6 +16,7 @@ public:
     std::string getSender() const;
     std::string getContent() const;
     time_t getTimestamp() const;
+    void setTimestamp(time_t timestamp);
     
     std::string toString() const;
 };

@@ -6,14 +6,19 @@
 #include <string>
 #include "message.h"
 #include "user.h"
+#include "database.h"
 
 class ChatService {
 private:
     std::map<std::string, User> users;
     std::vector<Message> messages;
+    Database* db;
+    bool useDatabase;
 
 public:
     ChatService();
+    ChatService(const std::string& dbPath);
+    ~ChatService();
     
     bool registerUser(const std::string& username);
     bool login(const std::string& username);
@@ -24,6 +29,8 @@ public:
     
     bool isUserRegistered(const std::string& username) const;
     bool isUserOnline(const std::string& username) const;
+    
+    bool isDatabaseEnabled() const;
 };
 
 #endif // CHAT_SERVICE_H
